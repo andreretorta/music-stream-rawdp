@@ -3,8 +3,13 @@ version: 2
 sources:
   - name: internal
     schema: internal
+    description: "Raw landing tables loaded daily from MongoDB into BigQuery before dbt transformation."
     tables:
       - name: t_raw_genre
+        description: "Raw genre records ingested from the source system."
       - name: t_raw_artist
+        description: "Raw artist records ingested from the source system."
       - name: t_raw_track
+        description: "Raw track records ingested from the source system."
       - name: t_raw_stream
+        description: "Raw listening stream (play event) records ingested from the source system."
