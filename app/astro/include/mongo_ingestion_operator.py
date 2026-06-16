@@ -42,6 +42,7 @@ class MongoToGCSIngestionOperator(BaseOperator):
         gcs_prefix: str,
         mongo_uri: str | None = None,
         gcp_conn_id: str = "google_cloud_default",
+        impersonation_chain: str | list[str] | None = None,
         query: dict[str, Any] | None = None,
         object_name: str = "part-00000.json",
         **kwargs,
@@ -53,6 +54,7 @@ class MongoToGCSIngestionOperator(BaseOperator):
         self.gcs_prefix = gcs_prefix
         self.mongo_uri = mongo_uri
         self.gcp_conn_id = gcp_conn_id
+        self.impersonation_chain = impersonation_chain
         self.query = query or {}
         self.object_name = object_name
 
@@ -95,7 +97,10 @@ class MongoToGCSIngestionOperator(BaseOperator):
         from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
         object_name = f"{self.gcs_prefix}/{self.object_name}"
-        hook = GCSHook(gcp_conn_id=self.gcp_conn_id)
+        hook = GCSHook(
+            gcp_conn_id=self.gcp_conn_id,
+            impersonation_chain=self.impersonation_chain,
+        )
         hook.upload(
             bucket_name=self.bucket,
             object_name=object_name,

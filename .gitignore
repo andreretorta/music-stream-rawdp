@@ -6,6 +6,10 @@ __pycache__/
 venv/
 .env
 
+# Local Astro overrides / mounted credentials (never commit)
+docker-compose.override.yml
+**/gcp/application_default_credentials.json
+
 # dbt
 transformations/dbt/**/target/
 transformations/dbt/**/dbt_packages/

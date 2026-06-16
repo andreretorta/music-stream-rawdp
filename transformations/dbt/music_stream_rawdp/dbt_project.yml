@@ -24,6 +24,10 @@ models:
     master:
       +materialized: incremental
       schema: master
+      +partition_by:
+        field: day_part
+        data_type: date
+        granularity: day
       +persist_docs:
         relation: true
         columns: true

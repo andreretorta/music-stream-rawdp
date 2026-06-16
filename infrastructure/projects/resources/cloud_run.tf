@@ -14,9 +14,15 @@ module "cloudrun_dbt" {
   job_sa          = var.sa_dbt
   orchestrator_sa = var.sa_orchestrator
 
-  env_vars = {
-    DBT_PROJECT = var.dataproduct_name
-  }
+  env_vars = merge(
+    {
+      DBT_PROJECT = var.dataproduct_name
+      GCP_REGION  = var.region
+    },
+    var.env == "d"
+    ? { GCP_PROJECT_DEV = var.project_id }
+    : { GCP_PROJECT_PRD = var.project_id }
+  )
 
   depends_on = [
     module.dataset_internal,

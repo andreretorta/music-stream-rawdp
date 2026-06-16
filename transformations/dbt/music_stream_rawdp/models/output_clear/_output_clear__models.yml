@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: v_raw_genre
+    description: "Output-clear (consumption) view over master.t_raw_genre, exposing genre data to downstream consumers."
+    columns:
+      - name: genre_id
+        description: "Unique genre identifier."
+      - name: name
+        description: "Human-readable genre name."
+
+  - name: v_raw_artist
+    description: "Output-clear (consumption) view over master.t_raw_artist, exposing artist data to downstream consumers."
+    columns:
+      - name: artist_id
+        description: "Unique artist identifier."
+      - name: name
+        description: "Artist name."
+
+  - name: v_raw_track
+    description: "Output-clear (consumption) view over master.t_raw_track, exposing track data to downstream consumers."
+    columns:
+      - name: track_id
+        description: "Unique track identifier."
+      - name: title
+        description: "Track title."
+
+  - name: v_raw_stream
+    description: "Output-clear (consumption) view over master.t_raw_stream, exposing listening stream events to downstream consumers."
+    columns:
+      - name: stream_id
+        description: "Unique stream/play event identifier."
+      - name: track_id
+        description: "Identifier of the track that was played."
