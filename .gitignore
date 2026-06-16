@@ -10,6 +10,7 @@ venv/
 transformations/dbt/**/target/
 transformations/dbt/**/dbt_packages/
 transformations/dbt/**/logs/
+transformations/dbt/**/package-lock.yml
 
 # Terraform
 **/.terraform/

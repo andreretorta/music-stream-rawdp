@@ -116,6 +116,10 @@ def gen_tracks(n: int, artist_ids: list[int], genre_ids: list[str]) -> list[dict
     docs = []
     for idx in range(1, n + 1):
         created = _ts_between(700, 100)
+        isrc = (
+            f"{fake.country_code()}{fake.lexify('??').upper()}"
+            f"{random.randint(10, 99)}{random.randint(10000, 99999)}"
+        )
         docs.append(
             {
                 "_id": idx,
@@ -127,7 +131,7 @@ def gen_tracks(n: int, artist_ids: list[int], genre_ids: list[str]) -> list[dict
                 "Album": fake.sentence(nb_words=random.randint(1, 4)).rstrip("."),
                 "ReleaseYear": random.randint(1970, 2025),
                 "Explicit": random.choice([True, False]),
-                "Isrc": f"{fake.country_code()}{fake.lexify('??').upper()}{random.randint(10, 99)}{random.randint(10000, 99999)}",
+                "Isrc": isrc,
                 "TrackGenres": random.sample(genre_ids, k=random.randint(1, 3)),
                 "Popularity": random.randint(0, 100),
                 "Composers": [fake.name() for _ in range(random.randint(1, 3))],
