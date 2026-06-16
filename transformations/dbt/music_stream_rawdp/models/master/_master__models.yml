@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: t_raw_genre
+    description: "Master layer for music genres. One row per genre, refreshed daily from the internal ingestion table."
+    columns:
+      - name: day_part
+        description: "Airflow logical date (ds) used as the daily partition key."
+      - name: ingestion_timestamp
+        description: "UTC timestamp when the record was ingested into the raw layer."
+      - name: genre_id
+        description: "Unique genre identifier (source _id)."
+      - name: parent_genre_id
+        description: "Identifier of the parent genre, when the genre is a sub-genre."
+      - name: created
+        description: "Timestamp when the genre was created in the source system."
+      - name: updated
+        description: "Timestamp when the genre was last updated in the source system."
+      - name: name
+        description: "Human-readable genre name."
+      - name: picture_file
+        description: "File reference for the genre artwork/picture."
+
+  - name: t_raw_artist
+    description: "Master layer for artists. One row per artist, refreshed daily from the internal ingestion table."
+    columns:
+      - name: day_part
+        description: "Airflow logical date (ds) used as the daily partition key."
+      - name: ingestion_timestamp
+        description: "UTC timestamp when the record was ingested into the raw layer."
+      - name: artist_id
+        description: "Unique artist identifier (source _id)."
+      - name: artist_external_id
+        description: "External artist identifier from the upstream catalogue."
+      - name: created
+        description: "Timestamp when the artist was created in the source system."
+      - name: updated
+        description: "Timestamp when the artist was last updated in the source system."
+      - name: name
+        description: "Artist name."
+      - name: description
+        description: "Free-text biography/description of the artist."
+      - name: country
+        description: "Country associated with the artist."
+      - name: extended_properties
+        description: "Additional artist metadata stored as a flexible structure."
+      - name: icon_file
+        description: "File reference for the artist icon image."
+      - name: poster_file
+        description: "File reference for the artist poster image."
+      - name: type
+        description: "Artist type/classification (e.g. solo, band)."
+
+  - name: t_raw_track
+    description: "Master layer for tracks. One row per track, refreshed daily from the internal ingestion table."
+    columns:
+      - name: day_part
+        description: "Airflow logical date (ds) used as the daily partition key."
+      - name: ingestion_timestamp
+        description: "UTC timestamp when the record was ingested into the raw layer."
+      - name: track_id
+        description: "Unique track identifier (source _id)."
+      - name: created
+        description: "Timestamp when the track was created in the source system."
+      - name: updated
+        description: "Timestamp when the track was last updated in the source system."
+      - name: title
+        description: "Track title."
+      - name: artist_id
+        description: "Identifier of the artist who performs the track."
+      - name: duration_ms
+        description: "Track duration in milliseconds."
+      - name: album
+        description: "Album the track belongs to."
+      - name: release_year
+        description: "Year the track was released."
+      - name: explicit
+        description: "Flag indicating whether the track contains explicit content."
+      - name: isrc
+        description: "International Standard Recording Code for the track."
+      - name: track_genres
+        description: "List of genres associated with the track."
+      - name: popularity
+        description: "Popularity score for the track."
+      - name: composers
+        description: "Composers credited for the track."
+      - name: metadata_tag
+        description: "Additional metadata tag for the track."
+
+  - name: t_raw_stream
+    description: "Master layer for listening streams (play events). One row per stream event, refreshed daily from the internal ingestion table."
+    columns:
+      - name: day_part
+        description: "Airflow logical date (ds) used as the daily partition key."
+      - name: ingestion_timestamp
+        description: "UTC timestamp when the record was ingested into the raw layer."
+      - name: stream_id
+        description: "Unique stream/play event identifier (source _id)."
+      - name: created
+        description: "Timestamp when the stream record was created in the source system."
+      - name: updated
+        description: "Timestamp when the stream record was last updated in the source system."
+      - name: utc_begin_date
+        description: "UTC timestamp when playback started."
+      - name: utc_end_date
+        description: "UTC timestamp when playback ended."
+      - name: duration_ms
+        description: "Listened duration in milliseconds."
+      - name: track_id
+        description: "Identifier of the track that was played."
+      - name: user_id
+        description: "Identifier of the user who played the track."
+      - name: device
+        description: "Device used during playback."
+      - name: country
+        description: "Country where the stream occurred."
+      - name: completed
+        description: "Flag indicating whether the track was played to completion."
+      - name: shuffle
+        description: "Flag indicating whether shuffle mode was active."
+      - name: skip_reason
+        description: "Reason the track was skipped, when applicable."
