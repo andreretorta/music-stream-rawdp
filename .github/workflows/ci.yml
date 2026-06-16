@@ -44,7 +44,9 @@ jobs:
           python-version: "3.10"
 
       - name: Install dbt
-        run: pip install dbt-bigquery==1.7.2
+        # Pin google-cloud-bigquery: dbt-bigquery 1.7.2 relies on the private
+        # `_CELLDATA_FROM_JSON` helper that was removed in google-cloud-bigquery 3.12.
+        run: pip install "dbt-bigquery==1.7.2" "google-cloud-bigquery==3.11.4"
 
       - name: dbt deps & parse
         run: |
