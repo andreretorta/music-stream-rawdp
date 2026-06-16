@@ -2,8 +2,9 @@
 
 import os
 
-# environment (replaced at deploy time by the CI/CD pipeline, e.g. 'dev'/'prd')
-ENV = 'VARREP_ENV'
+# environment (replaced at deploy time by the CI/CD pipeline, e.g. 'dev'/'prd').
+# Locally you can override it via the DEPLOY_ENV environment variable.
+ENV = os.environ.get('DEPLOY_ENV', 'VARREP_ENV')
 
 # project id — set these via Airflow/Astronomer environment variables so the
 # same code works against your real GCP projects (created by the bootstrap

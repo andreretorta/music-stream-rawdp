@@ -13,12 +13,12 @@ ENTITIES = ["genre", "artist", "track", "stream"]
 
 @pytest.mark.parametrize("entity", ENTITIES)
 def test_master_model_exists(entity):
-    assert (DBT / "master" / f"master_{entity}.sql").is_file()
+    assert (DBT / "master" / f"t_raw_{entity}.sql").is_file()
 
 
 @pytest.mark.parametrize("entity", ENTITIES)
 def test_output_clear_model_exists(entity):
-    assert (DBT / "output_clear" / f"output_clear_{entity}.sql").is_file()
+    assert (DBT / "output_clear" / f"v_raw_{entity}.sql").is_file()
 
 
 @pytest.mark.parametrize("entity", ENTITIES)

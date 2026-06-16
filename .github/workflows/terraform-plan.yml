@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - environment: dev
@@ -30,21 +31,31 @@ jobs:
     defaults:
       run:
         working-directory: infrastructure/projects/resources
+    # Only plan the environment that matches the PR's base branch:
+    #   PR -> dev  plans dev   |   PR -> main  plans prd.
+    # The non-matching matrix job still reports its check (green) with its
+    # steps skipped, so both required checks resolve without needing the other
+    # environment's WIF secrets on every PR.
     steps:
-      - uses: actions/checkout@v4
+      - if: ${{ matrix.environment == (github.base_ref == 'main' && 'prd' || 'dev') }}
+        uses: actions/checkout@v4
 
       - id: auth
+        if: ${{ matrix.environment == (github.base_ref == 'main' && 'prd' || 'dev') }}
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.DEPLOYER_SA }}
 
-      - uses: hashicorp/setup-terraform@v3
+      - if: ${{ matrix.environment == (github.base_ref == 'main' && 'prd' || 'dev') }}
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.6.6"
 
       - name: Terraform init
+        if: ${{ matrix.environment == (github.base_ref == 'main' && 'prd' || 'dev') }}
         run: terraform init -backend-config="bucket=${{ secrets[matrix.project_var] }}-terraform-state"
 
       - name: Terraform plan
+        if: ${{ matrix.environment == (github.base_ref == 'main' && 'prd' || 'dev') }}
         run: terraform plan -var-file=${{ matrix.tfvars }}

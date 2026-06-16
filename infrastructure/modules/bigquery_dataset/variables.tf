@@ -33,3 +33,9 @@ variable "dataset_location" {
   description = "BigQuery dataset location"
   type        = string
 }
+
+variable "iam_members" {
+  description = "Map of IAM role => list of members to grant on the dataset"
+  type        = map(list(string))
+  default     = {}
+}

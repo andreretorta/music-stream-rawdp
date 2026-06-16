@@ -52,11 +52,12 @@ def entity_group(entity_name, ingestion_parameters):
             source_objects=[f"{gcs_prefix}/*.{params['file_format']}"],
             destination_project_dataset_table=params["bq_table"],
             source_format=params["source_format"],
-            write_disposition="WRITE_APPEND",
+            write_disposition="WRITE_TRUNCATE",
             autodetect=False,
             schema_fields=params["schema_fields"],
             schema_update_options=["ALLOW_FIELD_RELAXATION"],
             gcp_conn_id=config.GCP_CONN_ID,
+            impersonation_chain=config.ORCHESTRATOR_SA,
             ignore_unknown_values=True,
         )
 
@@ -65,6 +66,7 @@ def entity_group(entity_name, ingestion_parameters):
             bucket_name=params["bucket"],
             prefix=f"{gcs_prefix}/",
             gcp_conn_id=config.GCP_CONN_ID,
+            impersonation_chain=config.ORCHESTRATOR_SA,
         )
 
         transformation_operator = CloudRunExecuteJobOperator(

@@ -22,7 +22,7 @@ with unioned as (
         day_part,
         ingestion_timestamp,
         current_timestamp() as checked_at
-    from {{ ref('master_' ~ entity_name) }}
+    from {{ ref('t_raw_' ~ entity_name) }}
     {% if not loop.last %}union all{% endif %}
     {% endfor %}
 )
