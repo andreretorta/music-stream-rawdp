@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# dbt
+transformations/dbt/**/target/
+transformations/dbt/**/dbt_packages/
+transformations/dbt/**/logs/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars.local
+
+# Seed output
+seed/output/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

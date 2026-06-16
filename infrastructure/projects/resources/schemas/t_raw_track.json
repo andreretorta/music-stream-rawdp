@@ -1,0 +1,26 @@
+[
+  { "name": "_id", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Created", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "Updated", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "Title", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Artist", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "DurationMs", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Album", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "ReleaseYear", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Explicit", "type": "BOOLEAN", "mode": "NULLABLE" },
+  { "name": "Isrc", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "TrackGenres", "type": "STRING", "mode": "REPEATED" },
+  { "name": "Popularity", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Composers", "type": "STRING", "mode": "REPEATED" },
+  {
+    "name": "MetadataTag",
+    "type": "RECORD",
+    "mode": "NULLABLE",
+    "fields": [
+      { "name": "_id", "type": "STRING", "mode": "NULLABLE" },
+      { "name": "Name", "type": "STRING", "mode": "NULLABLE" }
+    ]
+  },
+  { "name": "ingestion_timestamp", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "airflow_ds", "type": "DATE", "mode": "NULLABLE" }
+]

@@ -1,0 +1,55 @@
+name: build-dbt-image
+
+# Builds the dbt Docker image and pushes it to Artifact Registry.
+# Authenticates to GCP via Workload Identity Federation (keyless).
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - "transformations/dbt/**"
+
+permissions:
+  contents: read
+  id-token: write # required for WIF
+
+jobs:
+  build-push:
+    name: Build & push dbt image
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: transformations/dbt/music_stream_rawdp
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve environment
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "code=p" >> "$GITHUB_OUTPUT"
+            echo "project=${{ secrets.GCP_PROJECT_PRD }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=d" >> "$GITHUB_OUTPUT"
+            echo "project=${{ secrets.GCP_PROJECT_DEV }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION || 'europe-west1' }}-docker.pkg.dev --quiet
+
+      - name: Build & push
+        env:
+          REGION: ${{ vars.GCP_REGION || 'europe-west1' }}
+          PROJECT: ${{ steps.env.outputs.project }}
+          CODE: ${{ steps.env.outputs.code }}
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/ar-music-stream-rawdp-${CODE}/dbt:latest"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"

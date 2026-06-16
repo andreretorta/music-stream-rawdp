@@ -1,0 +1,49 @@
+name: terraform-plan
+
+# Plans the `resources` stack for each environment on infra PRs.
+# Authenticates to GCP via Workload Identity Federation (keyless).
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - "infrastructure/**"
+
+permissions:
+  contents: read
+  id-token: write # required for WIF
+  pull-requests: write
+
+jobs:
+  plan:
+    name: Plan (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - environment: dev
+            tfvars: env_dev.tfvars
+            project_var: GCP_PROJECT_DEV
+          - environment: prd
+            tfvars: env_prd.tfvars
+            project_var: GCP_PROJECT_PRD
+    defaults:
+      run:
+        working-directory: infrastructure/projects/resources
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.DEPLOYER_SA }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      - name: Terraform init
+        run: terraform init -backend-config="bucket=${{ secrets[matrix.project_var] }}-terraform-state"
+
+      - name: Terraform plan
+        run: terraform plan -var-file=${{ matrix.tfvars }}

@@ -1,0 +1,17 @@
+[
+  { "name": "_id", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Created", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "Updated", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "UtcBeginDate", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "UtcEndDate", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "DurationMs", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Track", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "UserId", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Device", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Country", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Completed", "type": "BOOLEAN", "mode": "NULLABLE" },
+  { "name": "Shuffle", "type": "BOOLEAN", "mode": "NULLABLE" },
+  { "name": "SkipReason", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "ingestion_timestamp", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "airflow_ds", "type": "DATE", "mode": "NULLABLE" }
+]

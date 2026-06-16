@@ -1,0 +1,4 @@
+# Python dependencies for the Airflow project.
+# The Google provider ships with Astro Runtime; pinned here for clarity.
+apache-airflow-providers-google==10.20.0
+pymongo==4.8.0

@@ -1,0 +1,21 @@
+{
+  "name": "music-stream-rawdp-track",
+  "entity": "track",
+  "source": {
+    "type": "mongodb",
+    "connection": "connection-mongodb-music-stream",
+    "database": "music_streaming",
+    "collection": "Track_ViewDP"
+  },
+  "sink": {
+    "bucket": "music-stream-rawdp-ingestion",
+    "path": "internal/t_raw_track",
+    "format": "NEWLINE_DELIMITED_JSON",
+    "bq_table": "internal.t_raw_track"
+  },
+  "partition": {
+    "column": "ingest_part",
+    "unit": "DAY"
+  },
+  "write_mode": "append"
+}

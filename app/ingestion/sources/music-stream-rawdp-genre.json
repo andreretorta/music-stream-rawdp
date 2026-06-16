@@ -1,0 +1,21 @@
+{
+  "name": "music-stream-rawdp-genre",
+  "entity": "genre",
+  "source": {
+    "type": "mongodb",
+    "connection": "connection-mongodb-music-stream",
+    "database": "music_streaming",
+    "collection": "Genre_ViewDP"
+  },
+  "sink": {
+    "bucket": "music-stream-rawdp-ingestion",
+    "path": "internal/t_raw_genre",
+    "format": "NEWLINE_DELIMITED_JSON",
+    "bq_table": "internal.t_raw_genre"
+  },
+  "partition": {
+    "column": "ingest_part",
+    "unit": "DAY"
+  },
+  "write_mode": "append"
+}

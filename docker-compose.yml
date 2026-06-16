@@ -1,0 +1,35 @@
+# Local fake source for the music-stream-rawdp portfolio project.
+# Spins up a MongoDB (the "operational" source) and mongo-express (UI).
+# NOTHING here is real — credentials are local-only and for demo purposes.
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: music-stream-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: music_app
+      MONGO_INITDB_ROOT_PASSWORD: music_pw
+      MONGO_INITDB_DATABASE: music_streaming
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: music-stream-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: music_app
+      ME_CONFIG_MONGODB_ADMINPASSWORD: music_pw
+      ME_CONFIG_MONGODB_URL: mongodb://music_app:music_pw@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo_data:

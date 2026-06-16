@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  python-checks:
+    name: Python lint & tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pymongo faker apache-airflow==2.9.3
+
+      - name: Lint (flake8)
+        run: flake8 app seed tests --max-line-length=120 --extend-ignore=E203,W503
+
+      - name: Run tests
+        run: pytest
+
+  dbt-compile:
+    name: dbt parse
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: transformations/dbt/music_stream_rawdp
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dbt
+        run: pip install dbt-bigquery==1.7.2
+
+      - name: dbt deps & parse
+        run: |
+          dbt deps
+          dbt parse --no-partial-parse
+        env:
+          # Fictional values; real auth happens in deploy pipelines.
+          DBT_PROFILES_DIR: .
+
+  terraform-validate:
+    name: Terraform fmt & validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/projects/resources
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive ../../
+
+      - name: Terraform init (no backend)
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        run: terraform validate

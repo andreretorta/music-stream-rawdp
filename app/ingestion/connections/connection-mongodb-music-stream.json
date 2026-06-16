@@ -1,0 +1,6 @@
+{
+  "name": "connection-mongodb-music-stream",
+  "type": "mongodb",
+  "description": "Operational MongoDB source for the music-stream-rawdp data product.",
+  "connection_string": "mongodb://${secrets.MONGO_USER}:${secrets.MONGO_PW}@10.10.10.10:27017/?authSource=admin&readPreference=secondary"
+}

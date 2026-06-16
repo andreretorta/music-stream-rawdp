@@ -1,0 +1,8 @@
+# Folders ignored by the Astronomer deployment.
+.github
+.idea
+docs
+infrastructure
+seed
+tests
+transformations

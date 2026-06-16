@@ -1,0 +1,10 @@
+# Fill these in after running the bootstrap stack (values come from its outputs).
+project_id       = "music-stream-rawdp-dev-9210"
+project_number   = "227482326380"
+domain           = "media"
+subdomain        = "music-streaming"
+dataproduct_name = "music-stream-rawdp"
+dataproduct_type = "raw"
+env              = "d"
+sa_orchestrator  = "sa-astronomer@music-stream-rawdp-dev-9210.iam.gserviceaccount.com"
+sa_dbt           = "sa-r-dataconsumption@music-stream-rawdp-dev-9210.iam.gserviceaccount.com"

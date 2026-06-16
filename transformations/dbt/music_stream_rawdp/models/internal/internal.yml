@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: internal
+    schema: internal
+    tables:
+      - name: t_raw_genre
+      - name: t_raw_artist
+      - name: t_raw_track
+      - name: t_raw_stream

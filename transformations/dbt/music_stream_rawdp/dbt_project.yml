@@ -1,0 +1,44 @@
+name: 'music_stream_rawdp'
+version: '1.0.0'
+profile: 'music_stream_rawdp'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  music_stream_rawdp:
+    internal:
+      +materialized: incremental
+      schema: internal
+      +persist_docs:
+        relation: true
+        columns: false
+    master:
+      +materialized: incremental
+      schema: master
+      +persist_docs:
+        relation: true
+        columns: true
+    output_clear:
+      +materialized: view
+      schema: output_clear
+      +persist_docs:
+        relation: true
+        columns: true
+      +grant_access_to:
+        - project: "{{ target.project }}"
+          dataset: "master"
+    monitoring:
+      +materialized: incremental
+      schema: monitoring
+      +persist_docs:
+        relation: true
+        columns: true

@@ -1,0 +1,54 @@
+name: deploy-astro
+
+# OPTIONAL — deploys DAGs to an Astronomer Cloud deployment.
+#
+# You do NOT need this to run the project: `astro dev start` runs Airflow
+# locally for free (see app/README.md). This workflow is manual on purpose so
+# it never fails for portfolios without an Astronomer account.
+#
+# To use it, set the secrets ASTRO_API_TOKEN, ASTRO_DEPLOYMENT_ID_DEV,
+# ASTRO_DEPLOYMENT_ID_PRD, then run it from the Actions tab. GCP project ids are
+# injected as Astronomer env vars (GCP_PROJECT_DEV / GCP_PROJECT_PRD) so base.py
+# / dbt resolve the real project.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        type: choice
+        options: [dev, prd]
+        default: dev
+
+jobs:
+  deploy:
+    name: Deploy DAGs to Astronomer
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/astro
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve environment
+        id: env
+        run: |
+          if [ "${{ inputs.environment }}" = "prd" ]; then
+            echo "env=prd" >> "$GITHUB_OUTPUT"
+            echo "deployment=${{ secrets.ASTRO_DEPLOYMENT_ID_PRD }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "env=dev" >> "$GITHUB_OUTPUT"
+            echo "deployment=${{ secrets.ASTRO_DEPLOYMENT_ID_DEV }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Replace environment placeholder
+        run: |
+          sed -i "s/VARREP_ENV/${{ steps.env.outputs.env }}/g" music_stream_rawdp/base.py
+
+      - name: Install Astro CLI
+        run: curl -sSL https://install.astronomer.io | sudo bash -s
+
+      - name: Astro deploy
+        run: astro deploy ${{ steps.env.outputs.deployment }} --force
+        env:
+          ASTRO_API_TOKEN: ${{ secrets.ASTRO_API_TOKEN }}
+

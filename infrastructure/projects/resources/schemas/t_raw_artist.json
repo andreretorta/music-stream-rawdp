@@ -1,0 +1,24 @@
+[
+  { "name": "_id", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "ArtistId", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "Created", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "Updated", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "Name", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Description", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Country", "type": "STRING", "mode": "NULLABLE" },
+  {
+    "name": "ExtendedProperties",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      { "name": "Context", "type": "STRING", "mode": "NULLABLE" },
+      { "name": "PropertyName", "type": "STRING", "mode": "NULLABLE" },
+      { "name": "PropertyValue", "type": "STRING", "mode": "NULLABLE" }
+    ]
+  },
+  { "name": "IconFile", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "PosterFile", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "Type", "type": "INTEGER", "mode": "NULLABLE" },
+  { "name": "ingestion_timestamp", "type": "TIMESTAMP", "mode": "NULLABLE" },
+  { "name": "airflow_ds", "type": "DATE", "mode": "NULLABLE" }
+]
