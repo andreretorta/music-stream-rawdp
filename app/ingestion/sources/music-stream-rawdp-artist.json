@@ -6,7 +6,7 @@
     "connection": "connection-mongodb-music-stream",
     "database": "music_streaming",
     "collection": "Artist_ViewDP"
-  },
+  }, 
   "sink": {
     "bucket": "music-stream-rawdp-ingestion",
     "path": "internal/t_raw_artist",

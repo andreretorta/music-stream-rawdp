@@ -10,7 +10,7 @@
   "sink": {
     "bucket": "music-stream-rawdp-ingestion",
     "path": "internal/t_raw_stream",
-    "format": "NEWLINE_DELIMITED_JSON",
+    "format": "NEWLINE_DELIMITED_JSON", 
     "bq_table": "internal.t_raw_stream"
   },
   "partition": {
