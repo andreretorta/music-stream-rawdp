@@ -55,7 +55,6 @@ def entity_group(entity_name, ingestion_parameters):
             write_disposition="WRITE_TRUNCATE",
             autodetect=False,
             schema_fields=params["schema_fields"],
-            schema_update_options=["ALLOW_FIELD_RELAXATION"],
             gcp_conn_id=config.GCP_CONN_ID,
             impersonation_chain=config.ORCHESTRATOR_SA,
             ignore_unknown_values=True,
