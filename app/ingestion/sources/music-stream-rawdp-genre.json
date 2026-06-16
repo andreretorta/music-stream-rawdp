@@ -7,7 +7,7 @@
     "database": "music_streaming",
     "collection": "Genre_ViewDP"
   },
-  "sink": {
+  "sink": { 
     "bucket": "music-stream-rawdp-ingestion",
     "path": "internal/t_raw_genre",
     "format": "NEWLINE_DELIMITED_JSON",
