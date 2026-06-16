@@ -1,6 +1,6 @@
 # Fill these in after running the bootstrap stack (values come from its outputs).
 project_id       = "music-stream-rawdp-prd-9210"
-project_number   = "REPLACE-ME-PROJECT-NUMBER"
+project_number   = "420909501544"
 domain           = "media"
 subdomain        = "music-streaming"
 dataproduct_name = "music-stream-rawdp"

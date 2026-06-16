@@ -9,7 +9,7 @@ module "ingestion_bucket" {
   env              = var.env
   dataproduct_name = var.dataproduct_name
 
-  bucket_name        = "${var.dataproduct_name}-ingestion"
+  bucket_name        = "${var.project_id}-ingestion"
   age_days_to_delete = 30
 }
 

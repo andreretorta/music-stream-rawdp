@@ -16,6 +16,7 @@ jobs:
   build-push:
     name: Build & push dbt image
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'prd' || 'dev' }}
     defaults:
       run:
         working-directory: transformations/dbt/music_stream_rawdp
