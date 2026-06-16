@@ -7,7 +7,7 @@ Ingestion is performed by a custom ``MongoToGCSIngestionOperator`` (see
 app/astro/include/), which reads directly from the operational MongoDB. No
 proprietary ingestion platform or managed transfer service is used.
 """
- 
+
 import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
