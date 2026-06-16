@@ -19,6 +19,10 @@ REGION = os.environ.get('GCP_REGION', 'europe-west1')
 # orchestration SA
 ORCHESTRATOR_SA = f'sa-astronomer@{PROJECT}.iam.gserviceaccount.com'
 
+# GCS landing bucket for raw ingestion. Terraform names it "${project_id}-ingestion"
+# (see infrastructure/projects/resources/storage.tf), so derive it from PROJECT.
+INGESTION_BUCKET = f"{PROJECT}-ingestion"
+
 
 # --- cloudrun (dbt) ----------------------------------------------------------
 JOB_DEV = "gcr-music-stream-rawdp-d-europe-west1-dbt"
@@ -38,7 +42,7 @@ TABLES = {
         "mongo_collection": "Genre_ViewDP",
         "priority_weight": 1,
         "timeout": 3600,
-        "bucket": "music-stream-rawdp-ingestion",
+        "bucket": INGESTION_BUCKET,
         "bq_table": f"{PROJECT}.internal.t_raw_genre",
         "source_format": "NEWLINE_DELIMITED_JSON",
         "file_format": "json",
@@ -59,7 +63,7 @@ TABLES = {
         "mongo_collection": "Artist_ViewDP",
         "priority_weight": 1,
         "timeout": 3600,
-        "bucket": "music-stream-rawdp-ingestion",
+        "bucket": INGESTION_BUCKET,
         "bq_table": f"{PROJECT}.internal.t_raw_artist",
         "source_format": "NEWLINE_DELIMITED_JSON",
         "file_format": "json",
@@ -89,7 +93,7 @@ TABLES = {
         "mongo_collection": "Track_ViewDP",
         "priority_weight": 1,
         "timeout": 3600,
-        "bucket": "music-stream-rawdp-ingestion",
+        "bucket": INGESTION_BUCKET,
         "bq_table": f"{PROJECT}.internal.t_raw_track",
         "source_format": "NEWLINE_DELIMITED_JSON",
         "file_format": "json",
@@ -121,7 +125,7 @@ TABLES = {
         "mongo_collection": "Stream_ViewDP",
         "priority_weight": 1,
         "timeout": 3600,
-        "bucket": "music-stream-rawdp-ingestion",
+        "bucket": INGESTION_BUCKET,
         "bq_table": f"{PROJECT}.internal.t_raw_stream",
         "source_format": "NEWLINE_DELIMITED_JSON",
         "file_format": "json",
