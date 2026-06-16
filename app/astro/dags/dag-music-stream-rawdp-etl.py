@@ -80,7 +80,7 @@ def entity_group(entity_name, ingestion_parameters):
                         "args": [
                             "run",
                             "--target", config.ENV,
-                            "--select", f"+output_clear_{entity_name.lower()}",
+                            "--select", f"+v_raw_{entity_name.lower()}",
                             "--exclude", "monitoring",
                             "--vars", str(ingestion_parameters),
                         ],
