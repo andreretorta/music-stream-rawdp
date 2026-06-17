@@ -1,5 +1,7 @@
 # music-stream-rawdp
 
+> 🌐 **Idiomas:** **🇧🇷 Português (BR) (este arquivo)** · [🇬🇧 English](README_EN.md)
+
 > **Projeto de portfólio** — pipeline de dados _end-to-end_ no estilo **Data Mesh / Data Product**,
 > inspirado numa arquitetura corporativa real. Pode correr **localmente** (MongoDB fake) e é
 > **provisionável em GCP real** via Terraform (projetos, IAM, Workload Identity Federation,

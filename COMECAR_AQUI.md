@@ -1,102 +1,164 @@
-# 🎵 GUIA SUPER SIMPLES — Pôr o projeto a funcionar
+# 🎵 COMEÇAR AQUI — Guia completo para replicar o projeto
 
-Este guia explica **passo a passo, como se fosses uma criança**, como fazer este
-projeto funcionar. Cada passo tem: **o que fazer**, **porquê** e **o comando**.
+> 🌐 **Idiomas:** **🇧🇷 Português (BR) (este arquivo)** · [🇬🇧 English](START_HERE.md)
 
-Não tenhas medo. É só seguir a ordem, de cima para baixo. 🙂
+Este guia leva **qualquer pessoa**, do zero até ter o pipeline funcionando.
+Siga os passos em ordem, de cima para baixo. Cada passo diz **o que fazer**,
+**por quê** e **o comando exato**.
 
----
+Há dois caminhos. Faça o **A** primeiro (é grátis e prova que tudo funciona);
+faça o **B** só quando quiser rodar na Google Cloud de verdade.
 
-## 🧩 O que é este projeto? (a história)
-
-Imagina uma fábrica de sumos:
-
-1. 🍊 **As laranjas** = os dados de uma app de música (artistas, músicas, etc.).
-   Ficam guardados numa "caixa" chamada **MongoDB**.
-2. 🚚 **O camião** = um programa (Airflow) que vai buscar as laranjas à caixa.
-3. 🏭 **A fábrica** = a Google Cloud (GCP), onde as laranjas viram sumo.
-4. 🧃 **O sumo** = tabelas limpas e organizadas (BigQuery), prontas a usar.
-5. 🤖 **Os robôs ajudantes** = o GitHub Actions, que faz tarefas sozinho quando
-   guardas o teu código.
-
-O objetivo é: **ligar a caixa de laranjas à fábrica e fazer sumo.** 🧃
-
-Há **dois caminhos**:
-
-- 🟢 **Caminho A — No teu computador (fácil, grátis, sem cartão):** ideal para
-  ver tudo a funcionar e mostrar no portefólio.
-- 🔵 **Caminho B — Na Google Cloud a sério (avançado):** precisa de conta GCP.
-
-Começa pelo **Caminho A**. 👇
+| Caminho | Onde roda | Custo | Para quê |
+| ------- | --------- | ----- | -------- |
+| 🟢 **A — Local** | no seu PC (Docker) | grátis | aprender, demonstrar, portfólio |
+| 🔵 **B — GCP real** | Google Cloud | pode cobrar | ambiente dev/prd de verdade |
 
 ---
 
-## 🟢 CAMINHO A — Correr no teu computador (recomendado para começar)
+## 🧩 O que faz o projeto (em 30 segundos)
 
-### ✅ Passo 0 — Instalar os "brinquedos" (programas)
+Um **data product** que puxa dados de um app de música do **MongoDB**, leva eles
+para a **Google Cloud**, e transforma em tabelas limpas no **BigQuery** com
+o **dbt**, orquestrado pelo **Airflow** e automatizado por **GitHub Actions**.
 
-Precisas de instalar 3 coisas (só uma vez na vida):
+```mermaid
+flowchart LR
+    A["🍊 MongoDB<br/>(dados origem)"] --> B["🚚 Airflow<br/>(orquestra)"]
+    B --> C["☁️ GCS<br/>(landing)"]
+    C --> D["🗄️ BigQuery internal<br/>(raw)"]
+    D --> E["📊 dbt no Cloud Run<br/>(transforma)"]
+    E --> F["🧃 master + output_clear<br/>(tabelas finais)"]
+    G["🤖 GitHub Actions"] -. "constroem a infra + imagem dbt" .-> C
+```
 
-| Programa | Para que serve | Link |
-| -------- | -------------- | ---- |
-| 🐳 **Docker Desktop** | corre a "caixa" (MongoDB) e o "camião" (Airflow) | https://www.docker.com/products/docker-desktop |
-| 🐍 **Python 3.10+** | a linguagem do projeto | https://www.python.org/downloads |
-| 🚀 **Astro CLI** | liga o motor do Airflow | https://www.astronomer.io/docs/astro/cli/install-cli |
-
-> Depois de instalar o **Docker Desktop**, **abre-o** e espera que fique verde
-> ("Engine running"). Sem isto, nada funciona.
+**Camadas BigQuery:** `internal` (raw bruto) → `master` (`t_raw_*`, tratado) →
+`output_clear` (`v_raw_*`, views de consumo) → `monitoring` (frescor).
 
 ---
 
-### ✅ Passo 1 — Ligar a "caixa de laranjas" (MongoDB)
+## 🗂️ Estrutura do repositório (mapa)
 
-**Porquê:** precisamos de dados para brincar.
+```
+FINAL_PROJECT/
+├─ docker-compose.yml          # MongoDB + mongo-express (local)
+├─ seed/                       # gera dados falsos no MongoDB
+├─ app/astro/                  # projeto Airflow (Astro CLI)
+│  ├─ dags/                    # o DAG do ETL
+│  ├─ music_stream_rawdp/      # config (base.py) e operadores
+│  └─ .env.example             # variáveis de ambiente locais
+├─ transformations/dbt/        # modelos dbt (master, output_clear, ...)
+├─ infrastructure/             # Terraform (bootstrap + resources)
+│  └─ projects/
+│     ├─ bootstrap/            # projeto GCP + SAs + WIF + state bucket
+│     └─ resources/            # buckets, datasets, Cloud Run, ...
+├─ .github/workflows/          # CI/CD (ci, terraform, build-dbt-image, ...)
+├─ scripts/                    # set_github_secrets.ps1 / .sh
+├─ tests/                      # pytest
+├─ SETUP.md                    # versão técnica detalhada do Caminho B
+└─ START_HERE.md               # versão em inglês deste guia
+```
 
-Abre o terminal (PowerShell) na pasta do projeto e escreve:
+---
+
+# 🟢 CAMINHO A — Rodar no seu computador
+
+### Passo 0 — Instalar os programas (uma vez)
+
+| Programa | Para quê | Link |
+| -------- | -------- | ---- |
+| 🐳 **Docker Desktop** | roda MongoDB e Airflow | https://www.docker.com/products/docker-desktop |
+| 🐍 **Python 3.10+** | linguagem do projeto | https://www.python.org/downloads |
+| 🚀 **Astro CLI** | motor do Airflow local | https://www.astronomer.io/docs/astro/cli/install-cli |
+
+> Abra o **Docker Desktop** e espere ficar verde ("Engine running"). Sem isso
+> nada funciona.
+
+**Verifique se está tudo instalado:**
+
+```powershell
+docker --version
+python --version
+astro version
+```
+
+---
+
+### Passo 1 — Clonar o projeto
+
+```powershell
+git clone https://github.com/<seu-usuario>/music-stream-rawdp.git
+cd music-stream-rawdp
+```
+
+---
+
+### Passo 2 — Subir o MongoDB (dados de origem)
 
 ```powershell
 docker compose up -d
 ```
 
-Isto liga o MongoDB (a caixa) e um site para o ver (mongo-express em
-http://localhost:8081).
+Sobe o MongoDB e o **mongo-express** (interface visual) em
+http://localhost:8081. 
+
+**Verifique:** `docker compose ps` deve mostrar os contêineres `Up`.
 
 ---
 
-### ✅ Passo 2 — Encher a caixa com laranjas (dados falsos)
-
-**Porquê:** a caixa está vazia. Vamos pô-la cheia de dados inventados.
+### Passo 3 — Popular o MongoDB com dados falsos
 
 ```powershell
 pip install -r seed/requirements.txt
 python seed/generate_seed_data.py
 ```
 
-Pronto! Agora há géneros, artistas, músicas e reproduções lá dentro. 🎶
+Cria gêneros, artistas, músicas e reproduções. Confirme no mongo-express
+(http://localhost:8081) que existem coleções no banco `music_streaming`.
 
 ---
 
-### ✅ Passo 3 — Ligar o "camião" (Airflow), GRÁTIS
-
-**Porquê:** o Airflow é quem vai buscar os dados e os organiza.
-
-> Não precisas de conta na Astronomer! Corre tudo no teu PC.
+### Passo 4 — Configurar o ambiente do Airflow
 
 ```powershell
 cd app/astro
 Copy-Item .env.example .env
+```
+
+Abra o `.env` e confirme (para o Caminho A local, os valores padrão servem):
+
+- `DEPLOY_ENV=dev`
+- `MONGO_URI=...host.docker.internal...` (o Airflow no Docker chega ao Mongo
+  do seu PC por `host.docker.internal`).
+
+> ℹ️ Para o **Caminho A** você não precisa de GCP. Se quiser que os passos que
+> escrevem em GCS/BigQuery funcionem, siga o Caminho B primeiro e use as
+> credenciais GCP (ver Passo B7).
+
+---
+
+### Passo 5 — Subir o Airflow
+
+```powershell
 astro dev start
 ```
 
-Espera um bocadinho. Quando acabar, abre o teu navegador em:
+Quando terminar, abra 👉 **http://localhost:8080** (usuário `admin`,
+senha `admin`).
 
-👉 **http://localhost:8080** (utilizador: `admin`, palavra-passe: `admin`)
+Ative o DAG `music-stream-rawdp-etl` e clique em ▶️ para dispará-lo.
 
-Vais ver as "tarefas" (DAGs) do projeto. Carrega no botão ▶️ para as correr. 🎉
+**Comandos úteis:**
 
-**Parabéns! Já tens o projeto a funcionar no teu computador.** 🥳
+```powershell
+astro dev restart   # aplica mudanças no .env / config (relê na inicialização)
+astro dev stop      # desliga o Airflow
+astro dev logs      # ver logs
+```
 
-Para desligar tudo no fim:
+---
+
+### Passo 6 — Desligar tudo no fim
 
 ```powershell
 astro dev stop
@@ -104,29 +166,37 @@ cd ../..
 docker compose down
 ```
 
----
-
-## 🔵 CAMINHO B — Correr na Google Cloud (avançado)
-
-Isto é como mudar a fábrica de tua casa para uma fábrica gigante de verdade.
-Só faz isto se quiseres usar a **Google Cloud real**.
-
-> ⚠️ A Google Cloud pode **cobrar dinheiro**. Tem cuidado e usa a camada
-> gratuita / créditos. Para portefólio, o **Caminho A já chega**.
-
-### 🧰 O que precisas antes de começar
-
-| Coisa | Para que serve |
-| ----- | -------------- |
-| Conta Google Cloud com **faturação** ativa | é onde a fábrica vive |
-| [`gcloud` CLI](https://cloud.google.com/sdk/docs/install) | falar com a Google Cloud |
-| [Terraform](https://developer.hashicorp.com/terraform/downloads) | construir a fábrica com "plantas" |
-| [`gh` CLI](https://cli.github.com) | falar com o GitHub |
-| Um repositório no GitHub com este código | onde vivem os robôs (Actions) |
+✅ **Você concluiu o Caminho A.**
 
 ---
 
-### 🟦 Passo B1 — Dizer "olá" à Google Cloud
+# 🔵 CAMINHO B — Rodar na Google Cloud (dev e prd)
+
+> ⚠️ A GCP pode **cobrar**. Use créditos / camada gratuita. Para portfólio o
+> Caminho A já basta. A versão técnica detalhada está em [SETUP.md](SETUP.md).
+
+### O que você precisa antes
+
+| Ferramenta | Para quê | Link |
+| ---------- | -------- | ---- |
+| Conta GCP com **billing** ativa | onde a infra vive | — |
+| [`gcloud` CLI](https://cloud.google.com/sdk/docs/install) | falar com a GCP | — |
+| [Terraform >= 1.6](https://developer.hashicorp.com/terraform/downloads) | provisionar a infra | — |
+| [`gh` CLI](https://cli.github.com) | configurar segredos do GitHub | — |
+| Repositório GitHub com este código | onde rodam os Actions | — |
+
+Reúna estes valores antes de começar:
+
+| Valor | Como obter |
+| ----- | ---------- |
+| `billing_account` | `gcloud billing accounts list` |
+| `org_id` ou `folder_id` | `gcloud organizations list` |
+| `github_repository` | `owner/music-stream-rawdp` |
+| `project_id` dev/prd | escolha IDs únicos globalmente |
+
+---
+
+### Passo B1 — Autenticar na GCP
 
 ```powershell
 gcloud auth login
@@ -135,144 +205,235 @@ gcloud auth application-default login
 
 ---
 
-### 🟦 Passo B2 — Construir a base (projeto + contas + segurança)
+### Passo B2 — Bootstrap (projeto + SAs + WIF + state bucket + secrets)
 
-A "bootstrap" cria o projeto na GCP, as **service accounts** (robôs com crachá),
-a ligação segura ao GitHub (WIF) e os cofres de segredos.
+A stack `bootstrap` usa backend **local** e cria a base que todo o resto usa.
+Rode **uma vez por ambiente** (dev e prd).
 
-1. Abre o ficheiro
-   [infrastructure/projects/bootstrap/env_dev.tfvars](infrastructure/projects/bootstrap/env_dev.tfvars)
-   e troca todos os `REPLACE-ME-...` pelos teus valores.
-2. Corre:
+1. Edite `infrastructure/projects/bootstrap/env_dev.tfvars` (e `env_prd.tfvars`)
+   e substitua todos os `REPLACE-ME-*`.
+2. Aplique:
 
 ```powershell
 cd infrastructure/projects/bootstrap
 terraform init
 terraform apply -var-file=env_dev.tfvars
+terraform apply -var-file=env_prd.tfvars
 ```
 
-Diz **yes** quando perguntar. Quando acabar, mostra uns "outputs" importantes
-(guarda-os, vamos usá-los já a seguir).
+3. Guarde os outputs (você precisa deles no Passo B4):
 
-> 📖 Os detalhes completos estão no [SETUP.md](SETUP.md). Este guia é o resumo
-> fácil.
+```powershell
+terraform output
+# wif_provider      -> projects/.../providers/github-provider
+# sa_deployer_email -> sa-terraform-deployer@<project>.iam.gserviceaccount.com
+# tf_state_bucket   -> <project>-terraform-state
+```
 
 ---
 
-### 🔐 Passo B3 — Os SEGREDOS do GitHub (muito importante!)
+### Passo B3 — Credenciais do MongoDB no Secret Manager
 
-**O que são:** senhas e identificadores que os robôs do GitHub Actions precisam
-para entrar na Google Cloud. São **secretos**, por isso guardam-se num cofre
-especial do GitHub (não no código!).
+A bootstrap cria os secrets `MONGO_USER` e `MONGO_PW` **vazios**. Preencha-os
+(o Terraform nunca toca nos valores):
 
-**Quais são os segredos?** (a lista completa)
+```powershell
+echo -n "seu-usuario" | gcloud secrets versions add MONGO_USER --data-file=- --project <project_id>
+echo -n "sua-senha"   | gcloud secrets versions add MONGO_PW   --data-file=- --project <project_id>
+```
 
-| 🔑 Nome | É o quê? | De onde vem |
-| ------- | -------- | ----------- |
-| `WIF_PROVIDER` | o "passe de entrada" sem chave | output `wif_provider` da bootstrap |
-| `DEPLOYER_SA` | o robô que constrói a infraestrutura | output `sa_deployer_email` |
-| `GCP_PROJECT_DEV` | nome do projeto de testes | tu escolhes |
-| `GCP_PROJECT_PRD` | nome do projeto "a sério" | tu escolhes |
-| `ASTRO_API_TOKEN` | (opcional) só se usares Astronomer Cloud | da Astronomer |
-| `ASTRO_DEPLOYMENT_ID_DEV` | (opcional) idem | da Astronomer |
-| `ASTRO_DEPLOYMENT_ID_PRD` | (opcional) idem | da Astronomer |
-| `GCP_REGION` | a região (ex: `europe-west1`) — é uma **variável**, não segredo | tu escolhes |
+---
 
-**Como os pôr lá?** Tens 3 maneiras (escolhe UMA):
+### Passo B4 — Segredos no GitHub (para o CI/CD)
 
-#### Maneira 1 — Automágica (a mais fácil) 🪄
+Os workflows entram na GCP **sem chaves** (Workload Identity Federation), mas
+precisam saber quais são os identificadores. Lista completa:
 
-Já existe um script que faz tudo por ti:
+| Nome | Tipo | Valor | Usado por |
+| ---- | ---- | ----- | --------- |
+| `WIF_PROVIDER` | secret | output `wif_provider` | terraform-plan/apply, build-dbt-image |
+| `DEPLOYER_SA` | secret | output `sa_deployer_email` | terraform-plan/apply, build-dbt-image |
+| `GCP_PROJECT_DEV` | secret | project id dev | terraform, build-dbt-image |
+| `GCP_PROJECT_PRD` | secret | project id prd | terraform, build-dbt-image |
+| `GCP_REGION` | **variable** | ex. `europe-west1` | build-dbt-image |
+| `ASTRO_API_TOKEN` | secret (opcional) | token Astronomer | deploy-astro |
+| `ASTRO_DEPLOYMENT_ID_DEV` | secret (opcional) | id deployment dev | deploy-astro |
+| `ASTRO_DEPLOYMENT_ID_PRD` | secret (opcional) | id deployment prd | deploy-astro |
+
+**Maneira fácil — script automático** (lê `WIF_PROVIDER`/`DEPLOYER_SA` dos
+outputs da bootstrap):
 
 ```powershell
 ./scripts/set_github_secrets.ps1 `
-  -Repo "o-teu-utilizador/music-stream-rawdp" `
-  -ProjectDev "<id-do-projeto-dev>" `
-  -ProjectPrd "<id-do-projeto-prd>" `
+  -Repo "owner/music-stream-rawdp" `
+  -ProjectDev "<project_id_dev>" `
+  -ProjectPrd "<project_id_prd>" `
   -Region "europe-west1"
 ```
 
-#### Maneira 2 — Escrevendo os comandos um a um
+**Maneira manual** (`gh` CLI) ou **pela web** (Settings → Secrets and variables
+→ Actions): ver detalhe em [SETUP.md](SETUP.md).
 
-```powershell
-$repo = "o-teu-utilizador/music-stream-rawdp"
-"<id-do-projeto-dev>" | gh secret set GCP_PROJECT_DEV --repo $repo --body -
-"<id-do-projeto-prd>" | gh secret set GCP_PROJECT_PRD --repo $repo --body -
-gh variable set GCP_REGION --repo $repo --body "europe-west1"
-# (WIF_PROVIDER e DEPLOYER_SA saem dos outputs da bootstrap)
-```
-
-#### Maneira 3 — Pelo site do GitHub (a clicar) 🖱️
-
-1. Vai ao teu repositório no GitHub.
-2. **Settings** (Definições) → **Secrets and variables** → **Actions**.
-3. Carrega em **New repository secret** e adiciona cada um da tabela.
-4. Para o `GCP_REGION`, usa o separador **Variables** em vez de Secrets.
+> 🔒 Para que o `terraform-apply` em **prd** rode, crie também o **Environment
+> `prd`** no GitHub (Settings → Environments) com required reviewer — assim o
+> deploy de produção espera pela sua aprovação.
 
 ---
 
-### 🤖 Passo B4 — Os robôs (GitHub Actions)
+### Passo B5 — Provisionar os recursos (buckets, datasets, Cloud Run)
 
-**O que são:** programas que correm sozinhos no GitHub quando guardas código.
-Estão na pasta `.github/workflows/`. Cada um faz uma tarefa:
-
-| 🤖 Robô | O que faz | Quando acorda |
-| ------- | --------- | ------------- |
-| `ci.yml` | verifica se o código está bom (testes) | em cada push/PR |
-| `terraform-plan.yml` | mostra o que vai mudar na GCP | em PR à infraestrutura |
-| `terraform-apply.yml` | aplica as mudanças na GCP | push para `dev`/`main` |
-| `build-dbt-image.yml` | constrói a imagem do dbt | quando mexes no dbt |
-| `deploy-astro.yml` | (opcional) envia para a Astronomer | só manualmente |
-
-**Como funcionam, simples:** quando fizeres `git push`, o robô certo acorda
-sozinho, lê os **segredos** do Passo B3 para entrar na GCP **sem palavras-passe**
-(magia do WIF), e faz o seu trabalho.
-
-Para ver os robôs a trabalhar:
-1. Vai ao teu repositório no GitHub.
-2. Carrega no separador **Actions** (no topo).
-3. Vais ver cada robô a correr (✅ verde = correu bem, ❌ vermelho = falhou).
-
----
-
-### 🟦 Passo B5 — Construir a fábrica (recursos do data product)
-
-Depois da base pronta, criamos os "tanques" e "máquinas" (BigQuery, buckets,
-Cloud Run):
+Preencha `infrastructure/projects/resources/env_dev.tfvars` com `project_id`,
+`project_number` (output da bootstrap) e os emails das SAs.
 
 ```powershell
 cd ../resources
-terraform init -backend-config="bucket=<id-do-projeto-dev>-terraform-state"
+terraform init -backend-config="bucket=<project_id_dev>-terraform-state"
 terraform apply -var-file=env_dev.tfvars
 ```
 
-🎉 **Pronto! A tua fábrica está na Google Cloud.**
+Cria: datasets `internal`/`master`/`output_clear`/`monitoring`, tabelas raw,
+buckets GCS e o Cloud Run Job do dbt (+ Artifact Registry).
+
+> No CI isso é feito sozinho: PR à infraestrutura → `terraform-plan`; merge para
+> `dev`/`main` → `terraform-apply`.
 
 ---
 
-## ❓ E se alguma coisa correr mal?
+### Passo B6 — Construir e publicar a imagem dbt
 
-| Problema | Solução simples |
-| -------- | --------------- |
-| 🐳 "Cannot connect to Docker" | Abre o **Docker Desktop** e espera ficar verde. |
-| 🔌 Airflow não liga ao MongoDB | Confere o `.env` (deve ter `host.docker.internal`). |
-| ❌ Robô do GitHub falha a vermelho | Vê se os **segredos** (Passo B3) estão todos certos. |
-| 💸 Medo de gastar dinheiro | Fica pelo **Caminho A** — é grátis e local. |
+O dbt roda num **Cloud Run Job** a partir de uma **imagem** no Artifact
+Registry. O Cloud Run usa a imagem publicada, **não** o seu código local — por
+isso qualquer alteração nos modelos dbt só chega na GCP depois de republicar.
+
+```powershell
+cd ../../../transformations/dbt/music_stream_rawdp
+gcloud auth configure-docker europe-west1-docker.pkg.dev
+docker build -t europe-west1-docker.pkg.dev/<project_id>/ar-music-stream-rawdp-d/dbt:latest .
+docker push europe-west1-docker.pkg.dev/<project_id>/ar-music-stream-rawdp-d/dbt:latest
+```
+
+> No CI: o workflow `build-dbt-image` faz isso automaticamente em push que toque
+> em `transformations/dbt/**`.
 
 ---
 
-## 🗺️ Resumo num desenho
+### Passo B7 — Apontar o Airflow para a GCP
+
+No `app/astro/.env`, escolha o ambiente. **Mantenha uma única definição ativa por
+chave** (comente a outra) para não apontar para o projeto errado:
+
+```properties
+# DEPLOY_ENV=dev
+DEPLOY_ENV=prd
+# GOOGLE_CLOUD_PROJECT=<project_id_dev>
+GOOGLE_CLOUD_PROJECT=<project_id_prd>
+# AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT={"conn_type":"google_cloud_platform","extra":{"project":"<project_id_dev>"}}
+AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT={"conn_type":"google_cloud_platform","extra":{"project":"<project_id_prd>"}}
+```
+
+Depois `astro dev restart` (o `.env` só é lido na inicialização).
+
+**Autenticação local → GCP:** o Airflow usa as suas Application Default
+Credentials (montadas via `docker-compose.override.yml`) e **impersona** a
+service account `sa-astronomer@<project>`. Para isso o seu usuário precisa de
+`roles/iam.serviceAccountTokenCreator` nessa SA:
+
+```powershell
+gcloud iam service-accounts add-iam-policy-binding `
+  "sa-astronomer@<project_id>.iam.gserviceaccount.com" `
+  --project <project_id> `
+  --member="user:<o-teu-email>" `
+  --role="roles/iam.serviceAccountTokenCreator"
+```
+
+> A propagação do IAM pode levar ~1 minuto. Verifique com:
+> `gcloud auth print-access-token --impersonate-service-account=sa-astronomer@<project_id>.iam.gserviceaccount.com`
+
+Dispare o DAG na UI do Airflow. Confirme os resultados no BigQuery (datasets
+`master` e `output_clear` do seu projeto).
+
+---
+
+## 🔁 Alternar entre dev e prd
+
+1. No `app/astro/.env`, comente/descomente as 3 chaves: `DEPLOY_ENV`,
+   `GOOGLE_CLOUD_PROJECT`, `AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT`.
+2. `astro dev restart`.
+
+Todo o resto (`PROJECT`, bucket de ingestão, Cloud Run job, `--target` do dbt)
+é derivado automaticamente de `DEPLOY_ENV` em `app/astro/music_stream_rawdp/base.py`.
+
+---
+
+## 🌳 Fluxo de Git / CI (como o código chega a dev e prd)
 
 ```mermaid
 flowchart LR
-    A["🍊 MongoDB<br/>(dados)"] --> B["🚚 Airflow<br/>(camião)"]
-    B --> C["☁️ GCS<br/>(armazém)"]
-    C --> D["🧃 BigQuery<br/>(sumo pronto)"]
-    D --> E["📊 dbt<br/>(organiza o sumo)"]
-    F["🤖 GitHub Actions<br/>(robôs)"] -. "constroem a fábrica" .-> C
+    F["feature branch"] -->|PR| D["dev"]
+    D -->|push| A1["terraform-apply (dev)<br/>build-dbt-image"]
+    D -->|PR| M["main"]
+    M -->|push| A2["terraform-apply (prd)<br/>build-dbt-image<br/>(aprovação manual)"]
 ```
 
-**Caminho A** = passos verdes (no teu PC).
-**Caminho B** = passos azuis (na Google Cloud).
+| Workflow | Quando roda | O que faz |
+| -------- | ------------ | --------- |
+| `ci.yml` | cada push/PR | flake8 + pytest + `dbt parse` |
+| `terraform-plan.yml` | PR a `infrastructure/**` | plano (dev em PR→dev, prd em PR→main) |
+| `terraform-apply.yml` | push `dev`/`main` | aplica infra (prd pede aprovação) |
+| `build-dbt-image.yml` | push a `transformations/dbt/**` | reconstrói imagem dbt |
+| `deploy-astro.yml` | manual | deploy para Astronomer Cloud (opcional) |
 
-Boa sorte! 🍀 Começa pelo Caminho A e diverte-te. 🎉
+> As required checks para fazer merge em `main` são: **Python lint & tests**,
+> **dbt parse**, **Terraform fmt & validate**. O check `Plan (prd)` pode
+> aparecer vermelho num PR de uma branch não protegida (o Environment prd recusa
+> o job) — isso **não bloqueia** o merge.
+
+---
+
+## ✅ Testes locais (antes de fazer push)
+
+```powershell
+pip install flake8 pytest
+flake8 app seed tests --max-line-length=120 --extend-ignore=E203,W503
+pytest -q
+```
+
+dbt (opcional, dentro de `transformations/dbt/music_stream_rawdp`):
+
+```powershell
+dbt deps
+dbt parse --no-partial-parse
+```
+
+---
+
+## ❓ Resolução de problemas
+
+| Problema | Causa / Solução |
+| -------- | --------------- |
+| 🐳 "Cannot connect to Docker" | Abra o Docker Desktop e espere ficar verde. |
+| 🔌 Airflow não conecta ao MongoDB | No `.env`, o `MONGO_URI` deve usar `host.docker.internal`. |
+| 🪣 `404 bucket does not exist` | O bucket é `<project_id>-ingestion`. Confirme `DEPLOY_ENV` e que a infra foi aplicada. |
+| 🔑 `PERMISSION_DENIED ... getAccessToken` | Falta `serviceAccountTokenCreator` na `sa-astronomer` (Passo B7) ou ainda está propagando (~1 min). |
+| 🧱 dbt "Nothing to do" | O `--select` aponta para um modelo inexistente; confirme os nomes dos modelos. |
+| ❌ Action vermelha | Confirme os segredos do Passo B4 e que a bootstrap foi aplicada. |
+| 🔁 Mudei o `.env` e nada muda | Rode `astro dev restart` (o `.env` só é lido na inicialização). |
+| 🧪 dbt na GCP usa modelos antigos | Republique a imagem dbt (Passo B6) — o Cloud Run usa a imagem, não o código local. |
+| 💸 Medo de gastar | Fique no Caminho A (local e grátis). |
+
+---
+
+## 🧹 Limpeza (destruir a infra GCP)
+
+```powershell
+cd infrastructure/projects/resources
+terraform destroy -var-file=env_dev.tfvars
+
+cd ../bootstrap
+terraform destroy -var-file=env_dev.tfvars
+```
+
+---
+
+Boa sorte! 🍀 Comece pelo **Caminho A**, confirme que tudo roda, e só depois
+avance para o **Caminho B**.
